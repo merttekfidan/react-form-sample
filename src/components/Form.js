@@ -1,42 +1,61 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { Context } from "../Store";
-
+import { getPost, postPost, testPost } from "./Api";
+import List from "./List";
 function Form() {
   const [state, dispatch] = useContext(Context);
-  const [title, setTitle] = useState("");
-  const [formState, setFormState] = useState({ form: { title: "", body: "" } });
+  const [data, setData] = useState([]);
+  const [formState, setFormState] = useState({ title: "", body: "" });
   function formHandle(e) {
     e.preventDefault();
-    dispatch({ type: "TEST", title: "asd" });
+    dispatch({
+      type: "SUBMIT",
+      payload: { title: formState.title, body: formState.body },
+    });
+  }
+  function getData() {
+    getPost().then((res) => setData(res.data));
+  }
 
-    setFormState({ form: { title: "dsa" } });
-    console.log(formState.form.body);
-  }
-  function setForm({ title, body }) {
-    setFormState({ form: { title, body } });
-    return formState;
-  }
+  useEffect(() => {
+    getData();
+    console.log(state);
+  }, [state]);
   return (
     <div>
-      {formState.form.title}
-      {formState.form.body}
+      {console.log("asd")}
       <form onSubmit={formHandle}>
         <div>
           title:
           <input
-            onChange={(e) => setForm({ ...formState, title: e.target.value })}
+            onChange={(e) =>
+              setFormState({ ...formState, title: e.target.value })
+            }
             name="title"
           />
         </div>
         <div>
           Body :
           <input
-            onChange={(e) => setForm({ ...formState, body: e.target.value })}
+            onChange={(e) =>
+              setFormState({ ...formState, body: e.target.value })
+            }
             name="body"
           />
         </div>
-        <button type="submit">Gönder</button>
+        <button
+          onClick={() => {
+            postPost({
+              userId: 1,
+              title: formState.title,
+              body: formState.body,
+            }).then((res) => getData());
+          }}
+        >
+          Test
+        </button>
       </form>
+      <List props={data} />
     </div>
   );
 }
